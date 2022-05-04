@@ -1,5 +1,5 @@
 """ My own stack implementation. """
-from data_structures.my_linked_list import LinkedList
+from algorithms_and_data_structures.data_structures.my_linked_list import LinkedList
 
 
 class Stack(LinkedList):

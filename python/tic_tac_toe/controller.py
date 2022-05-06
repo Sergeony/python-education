@@ -1,6 +1,8 @@
 """ The main module that starts the game
 and manages the flow of the application.
 """
+import logging.config
+import yaml
 from view import LinuxConsole
 from model import Model
 
@@ -12,7 +14,12 @@ class Controller:
         self.view = LinuxConsole()
         self.model = None
         self.log_path = "game.log"
-        self.rematch = False
+        self.player_names = []
+        self.player_scores = [0, 0]
+        with open("config.yaml", "r", encoding="utf-8") as file:
+            config = yaml.safe_load(file.read())
+            logging.config.dictConfig(config)
+        self.logger = logging.getLogger()
 
     def menu(self) -> None:
         """ Handle all user actions in the menu. """
@@ -20,11 +27,7 @@ class Controller:
             action = self.view.show_menu()
 
             if action == 0:
-                while True:
-                    self.new_game()
-                    self.rematch = self.view.play_again()
-                    if not self.rematch:
-                        break
+                self.game_series()
                 continue
 
             if action == 1:
@@ -33,19 +36,33 @@ class Controller:
                 continue
 
             if action == 2:
-                with open(self.log_path, mode='w', encoding='utf-8') as log:
+                with open(self.log_path, 'w', encoding='utf-8') as log:
                     log.close()
                 continue
 
             if action == 3:
                 break
 
+    def game_series(self):
+        """ Allow users to play multiple games in a row.
+        And reset user's info after that.
+        """
+        while True:
+            self.new_game()
+            if not self.view.play_again():
+                self.player_names.clear()
+                self.player_scores[0] = self.player_scores[1] = 0
+                break
+
     def new_game(self) -> None:
         """ Implement interaction between the user and the model throughout one game. """
-        player_names = None if self.rematch else self.view.input_names()
+        # Game inits
+        if len(self.player_names) == 0:
+            self.player_names = self.view.input_names()
         grid_size = self.view.choose_grid()
         self.model = Model(grid_size)
 
+        # Game in progress
         while True:
             self.view.show_field(self.model.grid)
             y_pos, x_pos = self.view.take_move()
@@ -55,28 +72,25 @@ class Controller:
                 self.view.show_field(self.model.grid)
                 break
 
-        winner = self.model.active_player
-        if game_status == "draw":
-            winner = None
-
+        # Game ends
+        winner = None
+        if game_status == "victory":
+            winner = self.model.active_player
+            self.player_scores[winner] += 1
         self.view.show_game_over(winner)
-        self.log_result(player_names, winner)
+        self.log_result()
 
-    def log_result(self, names: tuple, winner_number: int) -> None:
-        """ Save game result to the log.
-        If names is None, it means that players play rematch, so no names are needed.
-        If winner_number is None, it means that game finished with draw.
-        """
-        with open(self.log_path, "a+", encoding='utf-8') as log:
-            if names is None:
-                # FIXME: implement game result saving for rematches
-                # last_game = log.readlines()[-1]
-                pass
-            else:
-                if winner_number is None:
-                    log.write(f"{names[0]} and {names[1]} played a draw;" + "\n")
-                else:
-                    log.write(f"{names[winner_number - 1]} wins {names[winner_number - 2]};" + "\n")
+    def log_result(self) -> None:
+        """ Save game result to the log. """
+        if sum(self.player_scores) == 0:
+            self.logger.info("%s and %s played a draw", self.player_names[0], self.player_names[1])
+        elif sum(self.player_scores) == 1:
+            winner = 1 if self.player_scores[1] == 1 else 0
+            self.logger.info("%s wins %s", self.player_names[winner], self.player_names[winner-1])
+        else:
+            self.logger.info("%s %d:%d %s",
+                             self.player_names[0], self.player_scores[0],
+                             self.player_scores[1], self.player_names[1])
 
 
 if __name__ == "__main__":

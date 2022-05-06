@@ -15,7 +15,7 @@ class View(ABC):
         """ Represent a list with the results of past games. """
 
     @abstractmethod
-    def input_names(self) -> tuple:
+    def input_names(self) -> list:
         """ Request player names. """
 
     @abstractmethod
@@ -69,8 +69,8 @@ class LinuxConsole(View):
 
         print("Enter player names(skip the second one if you gonna play with AI")
 
-        return (input("Enter player_1 name: "),
-                input("Enter player_2 name: "))
+        return [input("Enter player_1 name: "),
+                input("Enter player_2 name: ")]
 
     def choose_grid(self):
         system("clear")
@@ -92,9 +92,9 @@ class LinuxConsole(View):
             for x in range(grid_size):
                 print("| ", end="")
 
-                if grid[y][x] == 1:
+                if grid[y][x] == 0:
                     symbol = "()"
-                elif grid[y][x] == 2:
+                elif grid[y][x] == 1:
                     symbol = "><"
                 else:
                     symbol = "  "
@@ -111,7 +111,8 @@ class LinuxConsole(View):
         if player_number is None:
             print("DRAW!")
         else:
-            print(f"PLAYER {player_number} WINS!")
+            # increment number to make it readable for common users
+            print(f"PLAYER {player_number+1} WINS!")
 
     def play_again(self):
         print("Press 0 to rematch\n"

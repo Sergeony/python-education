@@ -2,12 +2,12 @@
 
 
 class Model:
-    """ Tic-tac-toe game logic """
+    """ It is how the game works. """
 
     def __init__(self, grid_size: int):
         self._grid_size = grid_size
         self.grid = self.init_grid()
-        self.active_player = 1
+        self.active_player = 0
         self._moves_played = 0
         self._line_length = 3 if self._grid_size == 3 else 4
 
@@ -111,4 +111,4 @@ class Model:
 
     def _switch_player(self) -> None:
         """ Toggle to the player who will move next. """
-        self.active_player = 1 if self.active_player == 2 else 2
+        self.active_player = 0 if self.active_player == 1 else 1

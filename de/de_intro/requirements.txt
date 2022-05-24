@@ -1,0 +1,4 @@
+pandas~=1.4.2
+psycopg2-binary
+SQLAlchemy~=1.4.36
+minio~=7.1.8

@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+    database:
+        image: postgres:14.2
+        container_name: ${POSTGRES_CONTAINER}
+        restart: always
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_NAME}
+            PGDATA: /var/lib/postgresql/data
+        volumes:
+            - db-data:/var/lib/postgresql/data
+
+    s3:
+        image: minio/minio
+        container_name: ${MINIO_CONTAINER}
+        ports:
+            - "9000:9000"
+            - "9001:9001"
+        environment:
+            MINIO_ROOT_USER: ${MINIO_USER}
+            MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+        volumes:
+            - ./data:/data
+        command: minio server /data --console-address ":9001"
+
+
+    data_service:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        ports:
+            - "8000:5000"
+        environment:
+            DB_USER: ${POSTGRES_USER}
+            DB_PSWD: ${POSTGRES_PASSWORD}
+            DB_CNTR: ${POSTGRES_CONTAINER}
+            DB_NAME: ${POSTGRES_NAME}
+
+            S3_USER: ${MINIO_USER}
+            S3_PSWD: ${MINIO_PASSWORD}
+            S3_CNTR: ${MINIO_CONTAINER}
+volumes:
+    db-data:
+    data:

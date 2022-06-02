@@ -18,3 +18,4 @@ typing_extensions==4.1.1
 wrapt==1.13.3
 PyYAML==6.0
 freezegun==1.2.1
+pyspark~=3.2.1

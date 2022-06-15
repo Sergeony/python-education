@@ -2,10 +2,12 @@
 """
 from datetime import datetime
 from functools import reduce
+
 from pyspark.sql import DataFrame
 import pyspark.sql.functions as f
-from task_1 import create_rating_df, create_session
-from task_2 import create_movie_df, get_top_10_for_each_genre
+
+from de.spark.task_1 import create_rating_df, create_session
+from de.spark.task_2 import create_movie_df, get_top_10_for_each_genre
 
 
 def get_top_10_for_each_genre_in_decade(movie_df: DataFrame, rating_df: DataFrame):

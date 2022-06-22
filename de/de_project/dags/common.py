@@ -1,9 +1,12 @@
+""" A module with commonly used and default objects for most modules.
+"""
 from datetime import datetime, timedelta
 from os import getenv
 
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 from boto3 import session
+
 
 default_args = {
     "owner": "airflow",

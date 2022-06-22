@@ -1,12 +1,18 @@
+""" A module with a job, which loads data
+in the specified time range.
+"""
 from datetime import datetime
 from os import getenv
-from requests import get
 from json import dumps
+
+from requests import get
 
 from de.de_project.dags.common import s3
 
 
 def get_movies_on_page(page, movie_jsons):
+    """ Get all movies on the current page.
+    """
     for movie in page["results"]:
         url = f"https://api.themoviedb.org/3/movie/{movie['id']}?" \
               f"api_key={getenv('API_KEY')}"
@@ -14,7 +20,12 @@ def get_movies_on_page(page, movie_jsons):
 
 
 def get_movies_from_range(min_date: str, max_date: str):
+    """ Get all movies in range.
 
+    - Get number of pages with response.
+    - Collect all movies to the list.
+    - Load data to the minio.
+    """
     url = "https://api.themoviedb.org/3/discover/movie?" \
           f"api_key={getenv('API_KEY')}" \
           f"primary_release_date.gte={min_date}&" \

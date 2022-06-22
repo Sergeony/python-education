@@ -1,3 +1,6 @@
+""" A module with a scheduled DAG, which loads data
+from a source to the object storage.
+"""
 from datetime import datetime, timedelta
 
 from airflow import DAG

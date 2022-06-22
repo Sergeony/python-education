@@ -1,3 +1,6 @@
+""" A module with a similar DAG to load_movies_from_range_dag,
+but sets range to the last day.
+"""
 from datetime import datetime, timedelta
 
 from airflow import DAG

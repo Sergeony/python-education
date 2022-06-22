@@ -1,3 +1,6 @@
+""" A module with a job, which loads data from
+the object storage to the database.
+"""
 from os import getenv
 from functools import reduce
 
@@ -10,12 +13,17 @@ from de.de_project.dags.common import s3, sc, spark_session
 
 
 def get_database():
+    """ Get database instance.
+
+    - Connect to the postgres and check, if database exists.
+    - Create it, if not and return the instance.
+    """
     postgres_url = 'postgresql://' \
                    f'{getenv("POSTGRES_USER")}:' \
                    f'{getenv("POSTGRES_PASSWORD")}' \
-                   f'@postgres:5432/'
+                   f'@postgres:5432'
 
-    db_url = postgres_url + f'{getenv("POSTGRES_DB")}'
+    db_url = postgres_url + f'/{getenv("POSTGRES_DB")}'
 
     postgres = create_engine(postgres_url).connect()
 
@@ -30,22 +38,35 @@ def get_database():
 
 
 def get_df():
+    """ Create dataframe from the stored objects.
+
+    - Load each object and turn it to dataframe.
+    - Union them after all.
+    - Separate rows on genre and drop duplicate ones.
+    """
     dfs = []
     for json_obj in s3.Bucket("movies").objects.all():
         file = json_obj.get()["Body"].read().decode("utf-8")
-        df = spark_session.read.json(sc.parallelize([file]))
-        dfs.append(df)
-    df = reduce(DataFrame.unionAll, dfs)
+        movie_df = spark_session.read.json(sc.parallelize([file]))
+        dfs.append(movie_df)
+    movie_df = reduce(DataFrame.unionAll, dfs)
 
-    df = df.select('id',
-                   'imdb_id',
-                   f.explode(f.split(f.col('genres'), ',')).alias('genre'))
+    movie_df = movie_df.select('id',
+                               'imdb_id',
+                               f.explode(f.split(f.col('genres'), ',')).alias('genre'))
 
-    return df.drop_duplicates()
+    return movie_df.drop_duplicates()
 
 
 def load_data_to_postgres():
-    df = get_df()
+    """ Load data to the postgres database.
+
+    - Get dataframe from the minio.
+    - After all, delete all stored objects.
+    - Create table, if not exists.
+    - Finally, load dataframe to the database.
+    """
+    movie_df = get_df()
     s3.Bucket("movies").objects.all().delete()
 
     database = get_database().connect()
@@ -55,9 +76,9 @@ def load_data_to_postgres():
                      "imdb_id VARCHAR NOT NULL,"
                      "genre VARCHAR NOT NULL );")
 
-    df.to_pandas_on_spark().to_pandas().to_sql("movies",
-                                               con=database,
-                                               if_exists='append',
-                                               index=False)
+    movie_df.to_pandas_on_spark().to_pandas().to_sql("movies",
+                                                     con=database,
+                                                     if_exists='append',
+                                                     index=False)
 
     database.close()

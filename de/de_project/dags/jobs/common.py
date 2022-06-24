@@ -1,6 +1,6 @@
 """ A module with commonly used and default objects for most modules.
 """
-from datetime import datetime, timedelta
+from datetime import datetime
 from os import getenv
 
 from pyspark import SparkConf, SparkContext
@@ -15,19 +15,20 @@ default_args = {
     "email": ["admin@example.org"],
     "email_on_failure": False,
     "email_on_retry": False,
-    "retries": 1,
-    "retry_delay": timedelta(minutes=1)
+    "retries": 0,
+    "retry_delay": 0
 }
 
 
 s3 = session.Session().resource(service_name="s3",
                                 endpoint_url="http://s3:9000",
                                 aws_access_key_id=getenv("MINIO_ROOT_USER"),
-                                aws_secret_access_key=getenv("MINIO_ROOT_USER"))
+                                aws_secret_access_key=getenv("MINIO_ROOT_PASSWORD"))
 
 
 sc = SparkContext()
-spark_session = (SparkSession.builder.master("local")
+spark_session = (SparkSession.builder
+                             .master("local")
                              .appName("load_data_to_postgres")
                              .config(conf=SparkConf())
                              .getOrCreate())

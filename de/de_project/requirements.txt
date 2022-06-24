@@ -1,6 +1,8 @@
 pyspark==3.2.1
+pandas
 boto3
 requests
 plyvel==1.3.0
 celery
 SQLAlchemy
+psycopg2-binary

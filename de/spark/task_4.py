@@ -2,7 +2,8 @@
 """
 from pyspark.sql import SparkSession, DataFrame
 import pyspark.sql.functions as f
-from task_1 import create_session, get_top, create_rating_df, create_movie_df
+
+from de.spark.task_1 import create_session, get_top, create_rating_df, create_movie_df
 
 
 def create_principals_df(session: SparkSession) -> DataFrame:

@@ -3,7 +3,8 @@
 from pyspark.sql import Window, SparkSession
 import pyspark.sql.functions as f
 from pyspark.sql import DataFrame
-from task_1 import create_session, create_rating_df
+
+from de.spark.task_1 import create_session, create_rating_df
 
 
 def create_movie_df(session: SparkSession) -> DataFrame:
